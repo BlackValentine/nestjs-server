@@ -4,6 +4,10 @@ import { PostService } from './services/post.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import { PostSchema } from './models/post.model';
 import { PostRepository } from './repositories/post.repository';
+import { CategoryController } from './controllers/category.controller';
+import { CategorySchema } from './models/category.model';
+import { CategoryService } from './services/category.service';
+import { CategoryRepository } from './repositories/category.repository';
 
 @Module({
   imports: [
@@ -12,9 +16,13 @@ import { PostRepository } from './repositories/post.repository';
         name: 'Post',
         schema: PostSchema,
       },
+      {
+        name: 'Category',
+        schema: CategorySchema,
+      },
     ]),
   ],
-  controllers: [PostController],
-  providers: [PostService, PostRepository],
+  controllers: [PostController, CategoryController],
+  providers: [PostService, PostRepository, CategoryService, CategoryRepository],
 })
 export class PostModule {}
