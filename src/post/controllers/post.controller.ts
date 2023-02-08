@@ -6,20 +6,31 @@ import {
   Param,
   Post,
   Put,
+  Query,
   Req,
   UseGuards,
 } from '@nestjs/common';
+import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { AuthGuard } from '@nestjs/passport';
-import { CreatePostDto, UpdatePostDto } from '../dto/post.dto';
+import { CreatePostCommand } from '../commands/createPost.command';
+import {
+  CreatePostDto,
+  PaginationPostDto,
+  UpdatePostDto,
+} from '../dto/post.dto';
 import { PostService } from '../services/post.service';
 
 @Controller('post')
 export class PostController {
-  constructor(private readonly postService: PostService) {}
+  constructor(
+    private readonly postService: PostService,
+    private readonly commandBus: CommandBus,
+    private readonly queryBus: QueryBus,
+  ) {}
 
   @Get()
-  getAllPost() {
-    return this.postService.getAllPost();
+  getAllPost(@Query() { page, limit, start }: PaginationPostDto) {
+    return this.postService.getAllPost(page, limit, start);
   }
 
   @Get(':id')
@@ -27,10 +38,21 @@ export class PostController {
     return this.postService.getPostById(id);
   }
 
+  @Get(':id/get-by-query')
+  async getPostByIdByQuery(@Param('id') id: string) {
+    return this.postService.getPostById(id);
+  }
+
   @Post()
   @UseGuards(AuthGuard('jwt'))
   async createPost(@Req() req: any, @Body() post: CreatePostDto) {
     return this.postService.createPost(req.user, post);
+  }
+
+  @Post('create-by-command')
+  @UseGuards(AuthGuard('jwt'))
+  async createByCommand(@Req() req: any, @Body() post: CreatePostDto) {
+    return this.commandBus.execute(new CreatePostCommand(req.user, post));
   }
 
   @Put(':id')

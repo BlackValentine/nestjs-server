@@ -1,6 +1,7 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { CreateUserDto, LoginUserDto } from '../dto/user.dto';
+import { User } from '../models/user.model';
 import { UserService } from './user.service';
 
 @Injectable()
@@ -37,12 +38,64 @@ export class AuthService {
     return user;
   }
 
-  private _createToken({ email }): any {
+  private async _createToken({ email }, refresh = false) {
     //convert email to access token
     const accessToken = this.jwtService.sign({ email });
-    return {
-      expiresIn: process.env.EXPIRESIN,
-      accessToken,
-    };
+    if (!refresh) {
+      const refreshToken = this.jwtService.sign(
+        { email },
+        {
+          secret: process.env.SECRET_KEY_REFRESH,
+          expiresIn: process.env.EXPIRESIN_REFRESH,
+        },
+      );
+
+      await this.userService.update(
+        {
+          email: email,
+        },
+        {
+          refreshToken: refreshToken,
+        },
+      );
+
+      return {
+        expiresIn: process.env.EXPIRESIN,
+        expiresInRefresh: process.env.EXPIRESIN_REFRESH,
+        accessToken,
+        refreshToken,
+      };
+    } else {
+      return {
+        expiresIn: process.env.EXPIRESIN,
+        accessToken,
+      };
+    }
+  }
+
+  async refresh(refresh_token) {
+    try {
+      const payload = await this.jwtService.verify(refresh_token, {
+        secret: process.env.SECRET_KEY_REFRESH,
+      });
+      const user = await this.userService.getUserByRefresh(
+        refresh_token,
+        payload.email,
+      );
+      const token = await this._createToken(user, true);
+      return {
+        email: user.email,
+        ...token,
+      };
+    } catch (e) {
+      throw new HttpException('Invalid token', HttpStatus.UNAUTHORIZED);
+    }
+  }
+
+  async logout(user: User) {
+    await this.userService.update(
+      { email: user.email },
+      { refreshToken: null },
+    );
   }
 }

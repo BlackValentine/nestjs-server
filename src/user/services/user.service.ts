@@ -46,4 +46,36 @@ export class UserService {
       email: email,
     });
   }
+
+  async update(filter, update) {
+    if (update.refreshToken) {
+      update.refreshToken = await bcrypt.hash(
+        this.reverse(update.refreshToken),
+        10,
+      );
+    }
+    return await this.userRepository.findByConditionAndUpdate(filter, update);
+  }
+
+  private reverse(s) {
+    return s.split('').reverse().join('');
+  }
+
+  async getUserByRefresh(refresh_token, email) {
+    const user = await this.findByEmail(email);
+    if (!user) {
+      throw new HttpException('Invalid token', HttpStatus.UNAUTHORIZED);
+    }
+
+    const is_equal = await bcrypt.compareSync(
+      this.reverse(refresh_token),
+      user.refreshToken,
+    );
+
+    if (!is_equal) {
+      throw new HttpException('Invalid credentials', HttpStatus.UNAUTHORIZED);
+    }
+
+    return user;
+  }
 }

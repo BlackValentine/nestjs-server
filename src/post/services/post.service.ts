@@ -1,4 +1,5 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { isValidObjectId } from 'mongoose';
 import { User } from 'src/user/models/user.model';
 import { CreatePostDto, UpdatePostDto } from '../dto/post.dto';
 import { CategoryRepository } from '../repositories/category.repository';
@@ -11,8 +12,28 @@ export class PostService {
     private readonly categoryRepository: CategoryRepository,
   ) {}
 
-  getAllPost() {
-    return this.postRepository.getByCondition({});
+  async getAllPost(page: number, limit: number, start: number) {
+    const count = await this.postRepository.countDocuments({});
+    const count_page = (count / limit).toFixed();
+    const posts = await this.postRepository.getByCondition(
+      {
+        _id: {
+          $gt: isValidObjectId(start) ? start : '00000000000000000000',
+        },
+      },
+      null,
+      {
+        sort: {
+          _id: 1,
+        },
+        skip: (Number(page) - 1) * Number(limit),
+        limit: Number(limit),
+      },
+    );
+    return {
+      count_page,
+      posts,
+    };
   }
 
   getPostById(post_id: string) {

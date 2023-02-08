@@ -65,4 +65,8 @@ export class BaseRepository<T extends Document> {
   async findByIdAndUpdate(id, update) {
     return this.model.findByIdAndUpdate(id, update);
   }
+
+  async countDocuments(filter) {
+    return this.model.countDocuments(filter);
+  }
 }
