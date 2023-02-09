@@ -38,9 +38,16 @@ export class AuthService {
     return user;
   }
 
-  private async _createToken({ email }, refresh = false) {
+  private async _createToken(
+    { email },
+    isSecondFactorAuthenticated = false,
+    refresh = false,
+  ) {
     //convert email to access token
-    const accessToken = this.jwtService.sign({ email });
+    const accessToken = this.jwtService.sign({
+      email,
+      isSecondFactorAuthenticated,
+    });
     if (!refresh) {
       const refreshToken = this.jwtService.sign(
         { email },
@@ -97,5 +104,9 @@ export class AuthService {
       { email: user.email },
       { refreshToken: null },
     );
+  }
+
+  async getAccess2FA(user) {
+    return this._createToken(user, true);
   }
 }

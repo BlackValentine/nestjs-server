@@ -1,13 +1,6 @@
 version: "3"
 services:
-  rabbitmq:
-    image: rabbitmq:3-management
-    container_name: rabbitmq_blackvalentine
-    hostname: rabbitmq
-    volumes:
-      - /var/lib/rabbitmq
+  redis:
+    image: redis
     ports:
-      - "5673:5673"
-      - "15673:15673"
-    env_file:
-      - ./rabbitmq.env
+      - 5003:5003

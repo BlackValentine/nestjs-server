@@ -5,7 +5,8 @@ import { UserDto } from '../dto/user.dto';
 
 @Controller('user')
 export class UserController {
-  @UseGuards(AuthGuard())
+  // @UseGuards(AuthGuard())
+  @UseGuards(AuthGuard('jwt-two-factor'))
   @Get('profile')
   async getProfile(@Req() req: any): Promise<UserDto> {
     const user = await req.user;

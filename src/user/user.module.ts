@@ -10,6 +10,9 @@ import { AuthService } from './services/auth.service';
 import { UserService } from './services/user.service';
 import * as dotenv from 'dotenv';
 import { UserController } from './controllers/user.controller';
+import { TwoFactorAuthenticationController } from './controllers/twoFactorAuthentication.controller';
+import { TwoFactorAuthenticationService } from './services/twoFactorAuthenticationService.service';
+import { JwtTwoFactorStrategy } from './jwtTwoFactor.strategy';
 
 dotenv.config();
 
@@ -33,7 +36,18 @@ dotenv.config();
       },
     }),
   ],
-  controllers: [UserController, AuthController],
-  providers: [UserService, AuthService, UserRepository, JwtStrategy],
+  controllers: [
+    UserController,
+    AuthController,
+    TwoFactorAuthenticationController,
+  ],
+  providers: [
+    UserService,
+    AuthService,
+    UserRepository,
+    JwtStrategy,
+    TwoFactorAuthenticationService,
+    JwtTwoFactorStrategy,
+  ],
 })
 export class UserModule {}

@@ -1,14 +1,18 @@
 import {
   Body,
+  CacheInterceptor,
+  CACHE_MANAGER,
   Controller,
   Delete,
   Get,
+  Inject,
   Param,
   Post,
   Put,
   Query,
   Req,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { AuthGuard } from '@nestjs/passport';
@@ -19,6 +23,7 @@ import {
   UpdatePostDto,
 } from '../dto/post.dto';
 import { PostService } from '../services/post.service';
+import { Cache } from 'cache-manager';
 
 @Controller('post')
 export class PostController {
@@ -27,6 +32,7 @@ export class PostController {
     private readonly commandBus: CommandBus,
     private readonly queryBus: QueryBus,
   ) {}
+  // @Inject(CACHE_MANAGER) private cacheManager: Cache,
 
   @Get()
   getAllPost(@Query() { page, limit, start }: PaginationPostDto) {
@@ -37,6 +43,26 @@ export class PostController {
   getPostById(@Param('id') id: string) {
     return this.postService.getPostById(id);
   }
+
+  // @Get(':id/get-with-cache')
+  // @UseInterceptors(CacheInterceptor)
+  // getPostByIdWithCache(@Param('id') id: string) {
+  //   console.log('Run here');
+  //   return this.postService.getPostById(id);
+  // }
+
+  // @Get('cache/demo/set-cache')
+  // async demoSetCache() {
+  //   await this.cacheManager.set('blackvalentine', 'hello world', {
+  //     ttl: 60 * 10,
+  //   });
+  //   return true;
+  // }
+
+  // @Get('cache/demo/get-cache')
+  // async demoGetCache() {
+  //   return await this.cacheManager.get('blackvalentine');
+  // }
 
   @Get(':id/get-by-query')
   async getPostByIdByQuery(@Param('id') id: string) {
